@@ -1,0 +1,1418 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Advanced AI Content Detector</title>
+    <meta
+        content="A sophisticated tool to analyze text for AI-generated content patterns, providing detailed infographic results. For demonstration and entertainment purposes."
+        name="description" />
+    <meta content="AI detector, plagiarism checker, content analysis, AI writing, text analysis, Yasin Ullah"
+        name="keywords" />
+    <meta content="Yasin Ullah, Pakistan" name="author" />
+    <style>
+        :root {
+            --bg-color: #121212;
+            --surface-color: #1e1e1e;
+            --primary-color: #00bcd4;
+            --secondary-color: #ff4081;
+            --text-color: #e0e0e0;
+            --text-muted-color: #888;
+            --border-color: #333;
+            --success-color: #4caf50;
+            --error-color: #f44336;
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            --border-radius: 8px;
+            --box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html,
+        body {
+            height: 100%;
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-size: 16px;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        body.admin-open {
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            height: 100vh;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        .panel {
+            background-color: var(--surface-color);
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: var(--box-shadow);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .left-panel {
+            flex: 1;
+            min-width: 320px;
+        }
+
+        .right-panel {
+            flex: 1;
+            min-width: 320px;
+            gap: 20px;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .logo svg {
+            width: 32px;
+            height: 32px;
+            margin-right: 10px;
+            fill: currentColor;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100%;
+            background-color: #252525;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            color: var(--text-color);
+            padding: 15px;
+            font-family: 'Menlo', 'Consolas', monospace;
+            font-size: 0.9rem;
+            resize: none;
+            flex-grow: 1;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px var(--primary-color-translucent, rgba(0, 188, 212, 0.3));
+        }
+
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: var(--border-radius);
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: #121212;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background-color: var(--border-color);
+            color: var(--text-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: #444;
+        }
+
+        .btn-copy-result {
+            margin-left: auto;
+        }
+
+        .results-placeholder {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            color: var(--text-muted-color);
+            text-align: center;
+            flex-direction: column;
+        }
+
+        .results-placeholder svg {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .results-content {
+            display: none;
+            flex-direction: column;
+            gap: 20px;
+            height: 100%;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 180px;
+            height: 180px;
+            margin: 0 auto;
+        }
+
+        .chart-container svg {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+
+        .chart-bg {
+            fill: none;
+            stroke: var(--border-color);
+            stroke-width: 18;
+        }
+
+        .chart-bar {
+            fill: none;
+            stroke: url(#chartGradient);
+            stroke-width: 18;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 1s ease-out;
+        }
+
+        .chart-label {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .chart-percentage {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+
+        .chart-percentage span {
+            font-size: 1.5rem;
+        }
+
+        .chart-text {
+            font-size: 0.9rem;
+            color: var(--text-muted-color);
+        }
+
+        .summary-card {
+            background-color: #252525;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .summary-card h3 {
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .confidence-bar {
+            width: 100%;
+            height: 25px;
+            background: linear-gradient(to right, #4caf50, #ffeb3b, #ff9800, #f44336);
+            border-radius: 5px;
+            position: relative;
+            margin-top: 10px;
+        }
+
+        .confidence-marker {
+            width: 4px;
+            height: 33px;
+            background-color: white;
+            border: 2px solid #121212;
+            border-radius: 2px;
+            position: absolute;
+            top: -4px;
+            transform: translateX(-50%);
+            transition: left 1s ease-out;
+        }
+
+        .confidence-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--text-muted-color);
+            margin-top: 5px;
+        }
+
+        .matched-rules {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .matched-rules h3 {
+            margin-bottom: 10px;
+        }
+
+        .rule-card {
+            background: #252525;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 10px;
+            border: 1px solid var(--border-color);
+        }
+
+        .rule-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+        }
+
+        .rule-card-header .badge {
+            background-color: var(--primary-color);
+            color: #121212;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+
+        .rule-card-excerpt {
+            margin-top: 10px;
+            font-style: italic;
+            color: var(--text-muted-color);
+            font-size: 0.9rem;
+            background: #1e1e1e;
+            padding: 8px;
+            border-radius: 4px;
+        }
+
+        .rule-card-excerpt mark {
+            background-color: rgba(0, 188, 212, 0.3);
+            color: var(--primary-color);
+            border-radius: 3px;
+            padding: 1px 3px;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--surface-color);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #555;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #666;
+        }
+
+        .disclaimer {
+            font-size: 0.8rem;
+            color: var(--text-muted-color);
+            text-align: center;
+            margin-top: auto;
+            padding-top: 15px;
+            position: relative;
+        }
+
+        .disclaimer-close {
+            position: absolute;
+            top: 10px;
+            right: 0;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .admin-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .admin-panel {
+            width: 100%;
+            max-width: 900px;
+            height: 90vh;
+            background: var(--surface-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .admin-header {
+            padding: 15px 25px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .admin-header h2 {
+            font-size: 1.2rem;
+            color: var(--primary-color);
+        }
+
+        .admin-close {
+            background: none;
+            border: none;
+            color: var(--text-muted-color);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .admin-content {
+            flex-grow: 1;
+            padding: 25px;
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        .admin-section h3 {
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 5px;
+        }
+
+        .rules-list-container {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .admin-rule-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 5px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: background-color 0.2s;
+        }
+
+        .admin-rule-item:hover {
+            background-color: #2a2a2a;
+        }
+
+        .admin-rule-item.selected {
+            background-color: #2a2a2a;
+            border-color: var(--primary-color);
+        }
+
+        .admin-rule-item .name {
+            flex-grow: 1;
+        }
+
+        .admin-rule-item .shortcut {
+            font-family: monospace;
+            background: var(--border-color);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin: 0 10px;
+        }
+
+        .admin-rule-item .status {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .admin-rule-item .status.enabled {
+            background-color: var(--success-color);
+        }
+
+        .admin-rule-item .status.disabled {
+            background-color: var(--text-muted-color);
+        }
+
+        .admin-rule-item .actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .admin-rule-item .actions button {
+            background: none;
+            border: none;
+            color: var(--text-muted-color);
+            cursor: pointer;
+            padding: 2px;
+        }
+
+        .admin-rule-item .actions button:hover {
+            color: var(--text-color);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            color: var(--text-muted-color);
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 8px;
+            background-color: #252525;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-color);
+        }
+
+        .form-group textarea {
+            min-height: 60px;
+            resize: vertical;
+        }
+
+        .regex-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .regex-group input:first-child {
+            flex-grow: 1;
+        }
+
+        .regex-group input:last-child {
+            flex-basis: 70px;
+        }
+
+        .range-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .admin-footer {
+            padding: 15px 25px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            background: var(--surface-color);
+        }
+
+        #test-results-container {
+            margin-top: 15px;
+            background: #121212;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            min-height: 50px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        #toast-container {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .toast {
+            background-color: var(--surface-color);
+            color: var(--text-color);
+            padding: 12px 20px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-left: 4px solid var(--primary-color);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.3s, transform 0.3s;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .toast.success {
+            border-left-color: var(--success-color);
+        }
+
+        .toast.error {
+            border-left-color: var(--error-color);
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(5px);
+            z-index: 999;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-color);
+            font-family: var(--font-family);
+        }
+
+        .loading-spinner {
+            border: 4px solid var(--border-color);
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .loading-status {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+
+        .loading-progress-bar {
+            width: 80%;
+            max-width: 400px;
+            height: 10px;
+            background: var(--border-color);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .loading-progress-inner {
+            width: 0%;
+            height: 100%;
+            background: var(--primary-color);
+            transition: width 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                height: auto;
+                min-height: 100vh;
+            }
+
+            .left-panel,
+            .right-panel {
+                height: 50vh;
+                min-height: 400px;
+            }
+
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .admin-content {
+                grid-template-columns: 1fr;
+            }
+
+            .admin-panel {
+                height: 95vh;
+            }
+
+            .btn-copy-result {
+                margin-left: 0;
+            }
+        }
+    </style>
+    <link href="manifest.json" rel="manifest" />
+    <link href="favicon.ico" rel="icon" type="image/x-icon" />
+</head>
+
+<body class="">
+    <div class="container">
+        <div class="panel left-panel">
+            <div class="logo">
+                <svg viewbox="0 0 24 24">
+                    <path
+                        d="M15.5,12C18,12 20,14 20,16.5C20,17.38 19.75,18.21 19.31,18.9L22.39,22L21,23.39L17.88,20.32C17.19,20.75 16.38,21 15.5,21C13,21 11,19 11,16.5C11,14 13,12 15.5,12M15.5,14A2.5,2.5 0 0,0 13,16.5A2.5,2.5 0 0,0 15.5,19A2.5,2.5 0 0,0 18,16.5A2.5,2.5 0 0,0 15.5,14M10,4A4,4 0 0,1 14,8C14,8.91 13.69,9.75 13.18,10.43C12.33,10.16 11.39,10 10.5,10C7.25,10 4.69,11.41 3.5,13.5C4.86,11.53 7.5,10.04 10.5,10C10.5,10 10.5,10 10.5,10C10.5,10 10.5,10 10.5,10C10.5,10 10.5,10 10.5,10L10,11.5V13H2V11.5C2,9.5 6,8.5 10,8.5V4Z">
+                    </path>
+                </svg>
+                <span>AI Detector Pro</span>
+            </div>
+            <textarea dir="auto" id="text-input"
+                placeholder="Paste your text here to analyze for AI-generated content..."></textarea>
+            <div class="button-group">
+                <button class="btn btn-primary" id="check-btn">Check Text</button>
+                <button class="btn btn-secondary" id="clear-btn">Clear</button>
+                <button class="btn btn-secondary" id="example-btn">Load Example</button>
+                <button class="btn btn-secondary btn-copy-result" disabled="" id="copy-btn">Copy Result</button>
+            </div>
+            <div class="disclaimer" id="disclaimer">
+                This app is for demonstration &amp; entertainment purposes only. Results are simulated.
+                <span class="disclaimer-close" id="disclaimer-close">×</span>
+            </div>
+        </div>
+        <div class="panel right-panel">
+            <div class="results-placeholder" id="results-placeholder">
+                <svg viewbox="0 0 24 24">
+                    <path
+                        d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M9.29,16.29L5.71,12.71L7.12,11.29L9.29,13.46L16.88,5.88L18.29,7.29L9.29,16.29Z"
+                        fill="currentColor"></path>
+                </svg>
+                <p>Results will be displayed here after analysis.</p>
+            </div>
+            <div class="results-content" id="results-content">
+                <div class="results-grid">
+                    <div class="chart-container">
+                        <svg>
+                            <defs>
+                                <lineargradient id="chartGradient" x1="0%" x2="0%" y1="0%" y2="100%">
+                                    <stop offset="0%" stop-color="#f44336"></stop>
+                                    <stop offset="50%" stop-color="#ff9800"></stop>
+                                    <stop offset="100%" stop-color="#ffeb3b"></stop>
+                                </lineargradient>
+                            </defs>
+                            <circle class="chart-bg" cx="90" cy="90" r="80"></circle>
+                            <circle class="chart-bar" cx="90" cy="90" id="chart-bar" r="80"></circle>
+                        </svg>
+                        <div class="chart-label">
+                            <div class="chart-percentage" id="chart-percentage">0<span>%</span></div>
+                            <div class="chart-text">AI Generated</div>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Analysis Summary</h3>
+                        <p id="summary-reason">The text appears to be human-written based on initial analysis.</p>
+                        <div class="confidence-bar">
+                            <div class="confidence-marker" id="confidence-marker" style="left: 10%;"></div>
+                        </div>
+                        <div class="confidence-labels">
+                            <span>Human</span>
+                            <span>Mixed</span>
+                            <span>Likely AI</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="matched-rules">
+                    <h3>Detection Details</h3>
+                    <div id="matched-rules-list">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="admin-overlay" id="admin-overlay">
+        <div class="admin-panel" id="admin-panel">
+            <div class="admin-header">
+                <h2>Admin Control Panel</h2>
+                <button class="admin-close" id="admin-close-btn">×</button>
+            </div>
+            <div class="admin-content">
+                <div class="admin-section">
+                    <h3>Detection Rules</h3>
+                    <div class="rules-list-container" id="rules-list-container">
+                    </div>
+                    <button class="btn btn-secondary" id="add-new-rule-btn" style="margin-top: 15px; width: 100%;">Add
+                        New Rule</button>
+                </div>
+                <div class="admin-section">
+                    <h3 id="rule-editor-title">Rule Editor</h3>
+                    <form id="rule-form">
+                        <input id="rule-id" type="hidden" />
+                        <div class="form-group">
+                            <label for="rule-name">Rule Name</label>
+                            <input id="rule-name" required="" type="text" />
+                        </div>
+                        <div class="form-group">
+                            <label for="rule-regex">Regular Expression</label>
+                            <div class="regex-group">
+                                <input id="rule-regex" placeholder="e.g., \\b(phrase)\\b" required="" type="text" />
+                                <input id="rule-flags" placeholder="flags (gi)" type="text" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>AI % Range (0-100)</label>
+                            <div class="range-group">
+                                <input id="rule-ai-min" max="100" min="0" required="" type="number" value="70" /> to
+                                <input id="rule-ai-max" max="100" min="0" required="" type="number" value="80" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="rule-priority">Priority</label>
+                            <input id="rule-priority" required="" type="number" value="50" />
+                        </div>
+                        <div class="form-group">
+                            <label for="rule-shortcut">Shortcut Key (Ctrl+Alt+Shift+Key)</label>
+                            <input id="rule-shortcut" maxlength="1" placeholder="e.g., A" type="text" />
+                        </div>
+                        <div class="form-group">
+                            <label for="rule-notes">Notes</label>
+                            <textarea id="rule-notes"></textarea>
+                        </div>
+                        <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
+                            <input checked="" id="rule-enabled" style="width: auto;" type="checkbox" />
+                            <label for="rule-enabled" style="margin-bottom: 0;">Enabled</label>
+                        </div>
+                        <div class="button-group">
+                            <button class="btn btn-primary" type="submit">Save Rule</button>
+                            <button class="btn btn-secondary" disabled="" id="delete-rule-btn"
+                                style="background-color: var(--error-color); color: white;"
+                                type="button">Delete</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="admin-section" style="grid-column: span 2;">
+                    <h3>Rule Tester</h3>
+                    <div class="form-group">
+                        <textarea id="rule-test-text" placeholder="Paste text here to test rules..."></textarea>
+                    </div>
+                    <button class="btn btn-secondary" id="test-rules-btn">Test Rules</button>
+                    <div id="test-results-container"></div>
+                </div>
+                <div class="admin-section" style="grid-column: span 2;">
+                    <h3>Data Management</h3>
+                    <div class="button-group">
+                        <button class="btn btn-secondary" id="export-rules-btn">Export Rules (JSON)</button>
+                        <button class="btn btn-secondary" id="import-rules-btn">Import Rules (JSON)</button>
+                        <button class="btn btn-secondary" id="clear-data-btn"
+                            style="background-color: var(--error-color); color: white;">Clear All Local Data</button>
+                        <input accept=".json" id="import-file-input" style="display: none;" type="file" />
+                    </div>
+                </div>
+            </div>
+            <div class="admin-footer">
+                <span>Deterministic results via cyrb53 hash of (text + rule ID).</span>
+                <span>Keyboard shortcuts are active when this panel is closed.</span>
+            </div>
+        </div>
+    </div>
+    <div id="toast-container"></div>
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-status" id="loading-status">Starting analysis...</div>
+        <div class="loading-progress-bar">
+            <div class="loading-progress-inner" id="loading-progress-inner"></div>
+        </div>
+    </div>
+    <script>
+        (function () {
+            'use strict';
+            const DB_KEY = 'aiDetectorPro_YasinUllah';
+            const dom = {
+                loadingOverlay: document.getElementById('loading-overlay'),
+                loadingStatus: document.getElementById('loading-status'),
+                loadingProgress: document.getElementById('loading-progress-inner'),
+                textInput: document.getElementById('text-input'),
+                checkBtn: document.getElementById('check-btn'),
+                clearBtn: document.getElementById('clear-btn'),
+                exampleBtn: document.getElementById('example-btn'),
+                copyBtn: document.getElementById('copy-btn'),
+                disclaimer: document.getElementById('disclaimer'),
+                disclaimerClose: document.getElementById('disclaimer-close'),
+                resultsPlaceholder: document.getElementById('results-placeholder'),
+                resultsContent: document.getElementById('results-content'),
+                chartBar: document.getElementById('chart-bar'),
+                chartPercentage: document.getElementById('chart-percentage'),
+                summaryReason: document.getElementById('summary-reason'),
+                confidenceMarker: document.getElementById('confidence-marker'),
+                matchedRulesList: document.getElementById('matched-rules-list'),
+                adminOverlay: document.getElementById('admin-overlay'),
+                adminPanel: document.getElementById('admin-panel'),
+                adminCloseBtn: document.getElementById('admin-close-btn'),
+                rulesListContainer: document.getElementById('rules-list-container'),
+                addNewRuleBtn: document.getElementById('add-new-rule-btn'),
+                ruleEditorTitle: document.getElementById('rule-editor-title'),
+                ruleForm: document.getElementById('rule-form'),
+                ruleId: document.getElementById('rule-id'),
+                ruleName: document.getElementById('rule-name'),
+                ruleRegex: document.getElementById('rule-regex'),
+                ruleFlags: document.getElementById('rule-flags'),
+                ruleAiMin: document.getElementById('rule-ai-min'),
+                ruleAiMax: document.getElementById('rule-ai-max'),
+                rulePriority: document.getElementById('rule-priority'),
+                ruleShortcut: document.getElementById('rule-shortcut'),
+                ruleNotes: document.getElementById('rule-notes'),
+                ruleEnabled: document.getElementById('rule-enabled'),
+                deleteRuleBtn: document.getElementById('delete-rule-btn'),
+                ruleTestText: document.getElementById('rule-test-text'),
+                testRulesBtn: document.getElementById('test-rules-btn'),
+                testResultsContainer: document.getElementById('test-results-container'),
+                exportRulesBtn: document.getElementById('export-rules-btn'),
+                importRulesBtn: document.getElementById('import-rules-btn'),
+                importFileInput: document.getElementById('import-file-input'),
+                clearDataBtn: document.getElementById('clear-data-btn'),
+                toastContainer: document.getElementById('toast-container'),
+            };
+            let appState = {
+                rules: [],
+                settings: {
+                    showDisclaimer: true,
+                },
+                lastResult: null
+            };
+            const defaultRules = [
+                { id: "1698389400001", name: "AI Phrasing Patterns", regex: "\\b(in conclusion|as an AI|trained on|language model|delve into|unveiling the|tapestry of)\\b", flags: "gi", ai_range: [75, 90], enabled: true, shortcut: "A", priority: 100, notes: "Common phrases found in early LLM outputs." },
+                { id: "1698389400002", name: "High Repetition", regex: "\\b(\\w+)(\\s+\\1){2,}\\b", flags: "gi", ai_range: [65, 80], enabled: true, shortcut: "R", priority: 80, notes: "Detects simple word repetition (e.g., 'the the the')." },
+                { id: "1698389400003", name: "Citations & References", regex: "\\[\\d+\\]|\\b(?:et al\\.|doi:)\\b", flags: "gi", ai_range: [10, 30], enabled: true, shortcut: "C", priority: 50, notes: "Academic style often indicates human-written research." },
+                { id: "1698389400004", name: "Short Chatty Text", regex: "^[\\s\\S]{0,250}$", flags: "g", ai_range: [5, 25], enabled: true, shortcut: "S", priority: 20, notes: "Very short texts are less likely to be formal AI outputs." }
+            ];
+            const sampleText = `Unveiling the new framework, we delve into a rich tapestry of opportunities for developers. As an AI language model, I was trained on a vast dataset to understand these nuances. The core principles are efficiency, scalability, and robustness. The framework, in conclusion, represents a significant leap forward. We believe this is a great, great, great step for the community. For more details, see the paper by Smith et al. [1].`;
+            const cyrb53 = (str, seed = 0) => {
+                let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+                for (let i = 0, ch; i < str.length; i++) {
+                    ch = str.charCodeAt(i);
+                    h1 = Math.imul(h1 ^ ch, 2654435761);
+                    h2 = Math.imul(h2 ^ ch, 1597334677);
+                }
+                h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507);
+                h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+                h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507);
+                h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+                return 4294967296 * (2097151 & h2) + (h1 >>> 0);
+            };
+            const deterministicSelect = (text, rule) => {
+                const seedString = text.substring(0, 500) + rule.id;
+                const hash = cyrb53(seedString);
+                const [min, max] = rule.ai_range;
+                if (min >= max) return min;
+                return min + (hash % (max - min + 1));
+            };
+            function saveState() {
+                try {
+                    localStorage.setItem(DB_KEY, JSON.stringify(appState));
+                } catch (e) {
+                    console.error("Failed to save state:", e);
+                    showToast("Error saving data to local storage.", 'error');
+                }
+            }
+            function loadState() {
+                try {
+                    const storedState = localStorage.getItem(DB_KEY);
+                    if (storedState) {
+                        appState = JSON.parse(storedState);
+                    } else {
+                        appState.rules = JSON.parse(JSON.stringify(defaultRules));
+                        saveState();
+                    }
+                    if (!appState.settings) {
+                        appState.settings = { showDisclaimer: true };
+                    }
+                } catch (e) {
+                    console.error("Failed to load state:", e);
+                    appState.rules = JSON.parse(JSON.stringify(defaultRules));
+                    showToast("Could not load local data, loaded defaults.", 'error');
+                }
+                updateDisclaimerVisibility();
+            }
+            function showToast(message, type = 'info') {
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                toast.textContent = message;
+                dom.toastContainer.appendChild(toast);
+                setTimeout(() => {
+                    toast.classList.add('show');
+                }, 10);
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => toast.remove(), 300);
+                }, 3000);
+            }
+            function animateCounter(el, to) {
+                let from = 0;
+                const duration = 1000;
+                const stepTime = 20;
+                const steps = duration / stepTime;
+                const increment = to / steps;
+                const timer = setInterval(() => {
+                    from += increment;
+                    if (from >= to) {
+                        clearInterval(timer);
+                        from = to;
+                    }
+                    el.innerHTML = `${Math.round(from)}<span>%</span>`;
+                }, stepTime);
+            }
+            function updateUIWithResult(result) {
+                dom.resultsPlaceholder.style.display = 'none';
+                dom.resultsContent.style.display = 'flex';
+                dom.copyBtn.disabled = false;
+                animateCounter(dom.chartPercentage, result.finalScore);
+                const circumference = 2 * Math.PI * 80;
+                const offset = circumference - (result.finalScore / 100) * circumference;
+                dom.chartBar.style.strokeDasharray = `${circumference} ${circumference}`;
+                requestAnimationFrame(() => {
+                    dom.chartBar.style.strokeDashoffset = offset;
+                });
+                dom.confidenceMarker.style.left = `${result.finalScore}%`;
+                if (result.finalScore > 75) {
+                    dom.summaryReason.textContent = "High probability of AI generation detected. The text exhibits patterns commonly found in machine-generated content.";
+                } else if (result.finalScore > 50) {
+                    dom.summaryReason.textContent = "The text shows a mix of human and AI-like characteristics. Further review is recommended.";
+                } else if (result.finalScore > 25) {
+                    dom.summaryReason.textContent = "Some synthetic patterns were found, but the text is likely human-written with some AI assistance.";
+                } else {
+                    dom.summaryReason.textContent = "The analysis indicates the text is predominantly human-written. No significant AI patterns were detected.";
+                }
+                dom.matchedRulesList.innerHTML = '';
+                if (result.matchedRules.length > 0) {
+                    result.matchedRules.forEach(match => {
+                        const excerpt = match.match[0].length > 100 ? match.match[0].substring(0, 100) + '...' : match.match[0];
+                        const card = `
+                        <div class="rule-card">
+                            <div class="rule-card-header">
+                                <span style='display:none'>${match.rule.name}</span>
+                                <span class="badge">AI ${match.deterministicScore}%</span>
+                            </div>
+                            <div class="rule-card-excerpt">
+                                Matched: "<mark>${excerpt.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</mark>"
+                            </div>
+                        </div>
+                    `;
+                        dom.matchedRulesList.insertAdjacentHTML('beforeend', card);
+                    });
+                } else {
+                    dom.matchedRulesList.innerHTML = `<p style="color: var(--text-muted-color);">No specific AI patterns matched. The score is based on general text characteristics.</p>`;
+                }
+            }
+            function runCheck(text, isTest = false) {
+                if (!text.trim()) {
+                    if (!isTest) showToast("Please enter some text to analyze.", "error");
+                    return null;
+                }
+                const activeRules = appState.rules.filter(r => r.enabled);
+                const allMatched = [];
+                activeRules.forEach(rule => {
+                    try {
+                        const regex = new RegExp(rule.regex, rule.flags || '');
+                        const matches = text.match(regex);
+                        if (matches && matches.length > 0) {
+                            allMatched.push({
+                                rule: rule,
+                                match: matches,
+                                deterministicScore: deterministicSelect(text, rule)
+                            });
+                        }
+                    } catch (e) {
+                        console.error(`Invalid regex for rule "${rule.name}":`, e);
+                        if (!isTest) showToast(`Rule "${rule.name}" has an invalid regex.`, 'error');
+                    }
+                });
+                allMatched.sort((a, b) => b.rule.priority - a.rule.priority);
+                let finalScore;
+                let highestPriorityRuleMatch = null;
+                if (allMatched.length > 0) {
+                    highestPriorityRuleMatch = allMatched[0];
+                    finalScore = highestPriorityRuleMatch.deterministicScore;
+                } else {
+                    const hash = cyrb53(text);
+                    finalScore = 30 + (hash % 31);
+                }
+                const result = {
+                    finalScore,
+                    matchedRules: allMatched,
+                    timestamp: new Date().toISOString(),
+                    textHash: cyrb53(text).toString(16).substring(0, 8)
+                };
+                appState.lastResult = result;
+                return result;
+            }
+            async function handleCheck() {
+                const text = dom.textInput.value;
+                const result = runCheck(text);
+                if (!result) return;
+                dom.loadingOverlay.style.display = 'flex';
+                dom.loadingStatus.textContent = 'Analyzing full text...';
+                dom.loadingProgress.style.width = '0%';
+                const paragraphs = text.split(/\n+/).filter(p => p.trim().length > 0);
+                const paragraphCount = Math.max(1, paragraphs.length);
+                const totalSteps = paragraphCount + 2;
+                let currentStep = 0;
+                const updateProgress = (step, text) => {
+                    return new Promise(resolve => {
+                        setTimeout(() => {
+                            dom.loadingStatus.textContent = text;
+                            dom.loadingProgress.style.width = `${(step / totalSteps) * 100}%`;
+                            resolve();
+                        }, 400 + Math.random() * 300);
+                    });
+                };
+                await updateProgress(++currentStep, 'Scanning document structure...');
+                for (let i = 0; i < paragraphCount; i++) {
+                    await updateProgress(++currentStep, `Analyzing paragraph ${i + 1} of ${paragraphCount}...`);
+                }
+                await updateProgress(++currentStep, 'Generating final report...');
+                setTimeout(() => {
+                    dom.loadingOverlay.style.display = 'none';
+                    updateUIWithResult(result);
+                }, 900);
+            }
+            function handleClear() {
+                dom.textInput.value = '';
+                dom.resultsPlaceholder.style.display = 'flex';
+                dom.resultsContent.style.display = 'none';
+                dom.copyBtn.disabled = true;
+                appState.lastResult = null;
+            }
+            function handleLoadExample() {
+                dom.textInput.value = sampleText;
+                handleCheck();
+            }
+            function generateQrSvg(text) {
+                const size = 60;
+                const hash = cyrb53(text);
+                let svg = `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">`;
+                svg += `<rect width="${size}" height="${size}" fill="white"/>`;
+                for (let y = 0; y < 10; y++) {
+                    for (let x = 0; x < 10; x++) {
+                        if ((hash >> (x * y % 31)) & 1) {
+                            svg += `<rect x="${x * 6}" y="${y * 6}" width="6" height="6" fill="black"/>`;
+                        }
+                    }
+                }
+                svg += '</svg>';
+                return `data:image/svg+xml;base64,${btoa(svg)}`;
+            }
+            function handleCopyResult() {
+                if (!appState.lastResult) return;
+                const { finalScore, matchedRules, timestamp, textHash } = appState.lastResult;
+                let report = `AI DETECTION REPORT\n`;
+                report += `====================\n`;
+                report += `Analysis Date: ${new Date(timestamp).toLocaleString()}\n`;
+                report += `Report ID: ${textHash}\n`;
+                report += `\n`;
+                report += `OVERALL SCORE: ${finalScore}% Likely AI Generated\n`;
+                report += `\n`;
+                report += `DETECTION DETAILS:\n`;
+                if (matchedRules.length > 0) {
+                    matchedRules.forEach(match => {
+                        const excerpt = match.match[0].length > 50 ? match.match[0].substring(0, 50) + '...' : match.match[0];
+                        report += ` (Score: ${match.deterministicScore}%)\n`;
+                        report += ` Matched: "${excerpt}"\n`;
+                    });
+                } else {
+                    report += `- No specific rules matched. Score based on general text analysis.\n`;
+                }
+                report += `\nAI detector Pro`;
+                navigator.clipboard.writeText(report).then(() => {
+                    showToast("Report copied to clipboard!", 'success');
+                }, () => {
+                    showToast("Failed to copy report.", 'error');
+                });
+            }
+            function updateDisclaimerVisibility() {
+                dom.disclaimer.style.display = appState.settings.showDisclaimer ? 'block' : 'none';
+            }
+            function toggleAdminPanel(show) {
+                if (show) {
+                    document.body.classList.add('admin-open');
+                    dom.adminOverlay.style.display = 'flex';
+                    renderAdminRules();
+                    resetRuleForm();
+                } else {
+                    document.body.classList.remove('admin-open');
+                    dom.adminOverlay.style.display = 'none';
+                }
+            }
+            function renderAdminRules() {
+                dom.rulesListContainer.innerHTML = '';
+                const sortedRules = [...appState.rules].sort((a, b) => b.priority - a.priority);
+                sortedRules.forEach(rule => {
+                    const item = document.createElement('div');
+                    item.className = 'admin-rule-item';
+                    item.dataset.id = rule.id;
+                    item.innerHTML = `
+                    <span class="status ${rule.enabled ? 'enabled' : 'disabled'}"></span>
+                    <span class="name">${rule.name}</span>
+                    ${rule.shortcut ? `<span class="shortcut">${rule.shortcut.toUpperCase()}</span>` : ''}
+                    <div class="actions">
+                        <button class="toggle-btn" title="Toggle Enable/Disable">${rule.enabled ? '✔️' : '❌'}</button>
+                    </div>
+                `;
+                    item.addEventListener('click', () => {
+                        document.querySelectorAll('.admin-rule-item.selected').forEach(el => el.classList.remove('selected'));
+                        item.classList.add('selected');
+                        loadRuleIntoEditor(rule.id);
+                    });
+                    item.querySelector('.toggle-btn').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        toggleRuleState(rule.id);
+                    });
+                    dom.rulesListContainer.appendChild(item);
+                });
+            }
+            function loadRuleIntoEditor(id) {
+                const rule = appState.rules.find(r => r.id === id);
+                if (!rule) return;
+                dom.ruleEditorTitle.textContent = `Edit Rule: ${rule.name}`;
+                dom.ruleId.value = rule.id;
+                dom.ruleName.value = rule.name;
+                dom.ruleRegex.value = rule.regex;
+                dom.ruleFlags.value = rule.flags;
+                [dom.ruleAiMin.value, dom.ruleAiMax.value] = rule.ai_range;
+                dom.rulePriority.value = rule.priority;
+                dom.ruleShortcut.value = rule.shortcut;
+                dom.ruleNotes.value = rule.notes;
+                dom.ruleEnabled.checked = rule.enabled;
+                dom.deleteRuleBtn.disabled = false;
+            }
+            function resetRuleForm() {
+                dom.ruleEditorTitle.textContent = 'Add New Rule';
+                dom.ruleForm.reset();
+                dom.ruleId.value = '';
+                dom.deleteRuleBtn.disabled = true;
+                dom.ruleEnabled.checked = true;
+            }
+            function handleRuleFormSubmit(e) {
+                e.preventDefault();
+                const id = dom.ruleId.value;
+                const shortcut = dom.ruleShortcut.value.trim().toUpperCase();
+                if (shortcut && appState.rules.some(r => r.shortcut === shortcut && r.id !== id)) {
+                    showToast(`Shortcut '${shortcut}' is already in use.`, 'error');
+                    return;
+                }
+                const ruleData = {
+                    id: id || String(Date.now()),
+                    name: dom.ruleName.value,
+                    regex: dom.ruleRegex.value,
+                    flags: dom.ruleFlags.value,
+                    ai_range: [parseInt(dom.ruleAiMin.value), parseInt(dom.ruleAiMax.value)],
+                    priority: parseInt(dom.rulePriority.value),
+                    shortcut: shortcut,
+                    notes: dom.ruleNotes.value,
+                    enabled: dom.ruleEnabled.checked,
+                };
+                if (id) {
+                    const index = appState.rules.findIndex(r => r.id === id);
+                    appState.rules[index] = ruleData;
+                } else {
+                    appState.rules.push(ruleData);
+                }
+                saveState();
+                renderAdminRules();
+                resetRuleForm();
+                showToast('Rule saved successfully.', 'success');
+            }
+            function handleDeleteRule() {
+                const id = dom.ruleId.value;
+                if (!id || !confirm('Are you sure you want to delete this rule?')) return;
+                appState.rules = appState.rules.filter(r => r.id !== id);
+                saveState();
+                renderAdminRules();
+                resetRuleForm();
+                showToast('Rule deleted.', 'success');
+            }
+            function toggleRuleState(id, fromShortcut = false) {
+                const rule = appState.rules.find(r => r.id === id);
+                if (!rule) return;
+                rule.enabled = !rule.enabled;
+                saveState();
+                if (fromShortcut) {
+                    const originalTitle = document.title;
+                    document.title = rule.enabled ? "ON" : "OFF";
+                    setTimeout(() => {
+                        document.title = originalTitle;
+                    }, 500);
+                } else {
+                    renderAdminRules();
+                }
+            }
+            function handleTestRules() {
+                const text = dom.ruleTestText.value;
+                const result = runCheck(text, true);
+                let output = 'Test Results:\n\n';
+                if (result) {
+                    output += `Final Score: ${result.finalScore}%\n`;
+                    if (result.matchedRules.length > 0) {
+                        output += 'Matched Rules (by priority):\n';
+                        result.matchedRules.forEach(match => {
+                            output += `- "${match.rule.name}" (Score: ${match.deterministicScore}%)\n`;
+                        });
+                    } else {
+                        output += 'No rules matched. Using fallback score.\n';
+                    }
+                } else {
+                    output = 'Please enter text to test.';
+                }
+                dom.testResultsContainer.textContent = output;
+            }
+            function handleExport() {
+                const dataStr = JSON.stringify(appState.rules, null, 2);
+                const dataBlob = new Blob([dataStr], { type: "application/json" });
+                const url = URL.createObjectURL(dataBlob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'ai-detector-rules.json';
+                a.click();
+                URL.revokeObjectURL(url);
+                showToast('Rules exported.', 'success');
+            }
+            function handleImport() { dom.importFileInput.click(); }
+            function processImportedFile(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    try {
+                        const importedRules = JSON.parse(event.target.result);
+                        if (!Array.isArray(importedRules) || (importedRules.length > 0 && !importedRules[0].id)) {
+                            throw new Error("Invalid file format.");
+                        }
+                        if (confirm("This will replace all current rules. Are you sure?")) {
+                            appState.rules = importedRules;
+                            saveState();
+                            renderAdminRules();
+                            resetRuleForm();
+                            showToast('Rules imported successfully.', 'success');
+                        }
+                    } catch (err) {
+                        showToast('Failed to import: ' + err.message, 'error');
+                    }
+                };
+                reader.readAsText(file);
+                dom.importFileInput.value = '';
+            }
+            function handleClearData() {
+                if (confirm("This will delete all rules and settings. Are you sure?")) {
+                    localStorage.removeItem(DB_KEY);
+                    loadState();
+                    renderAdminRules();
+                    resetRuleForm();
+                    showToast('All local data cleared.', 'success');
+                }
+            }
+            function init() {
+                loadState();
+                dom.textInput.addEventListener('input', () => {
+                    const urduRegex = /[\u0600-\u06FF]/;
+                    if (urduRegex.test(dom.textInput.value)) {
+                        dom.textInput.style.fontFamily = 'Calibri, sans-serif';
+                        dom.textInput.style.fontSize = '1.1rem';
+                    } else {
+                        dom.textInput.style.fontFamily = "'Menlo', 'Consolas', monospace";
+                        dom.textInput.style.fontSize = '0.9rem';
+                    }
+                });
+                dom.checkBtn.addEventListener('click', handleCheck);
+                dom.clearBtn.addEventListener('click', handleClear);
+                dom.exampleBtn.addEventListener('click', handleLoadExample);
+                dom.copyBtn.addEventListener('click', handleCopyResult);
+                dom.disclaimerClose.addEventListener('click', () => {
+                    appState.settings.showDisclaimer = false;
+                    saveState();
+                    updateDisclaimerVisibility();
+                });
+                dom.adminCloseBtn.addEventListener('click', () => toggleAdminPanel(false));
+                dom.adminOverlay.addEventListener('click', (e) => { if (e.target === dom.adminOverlay) toggleAdminPanel(false); });
+                dom.addNewRuleBtn.addEventListener('click', resetRuleForm);
+                dom.ruleForm.addEventListener('submit', handleRuleFormSubmit);
+                dom.deleteRuleBtn.addEventListener('click', handleDeleteRule);
+                dom.testRulesBtn.addEventListener('click', handleTestRules);
+                dom.exportRulesBtn.addEventListener('click', handleExport);
+                dom.importRulesBtn.addEventListener('click', handleImport);
+                dom.importFileInput.addEventListener('change', processImportedFile);
+                dom.clearDataBtn.addEventListener('click', handleClearData);
+                document.addEventListener('keydown', (e) => {
+                    const isAdminOpen = dom.adminOverlay.style.display === 'flex';
+                    if (e.altKey && e.shiftKey && (e.ctrlKey || e.metaKey)) {
+                        e.preventDefault();
+                        if (e.key.toUpperCase() === 'Y') {
+                            toggleAdminPanel(!isAdminOpen);
+                        } else if (!isAdminOpen) {
+                            const key = e.key.toUpperCase();
+                            const ruleWithShortcut = appState.rules.find(r => r.shortcut === key);
+                            if (ruleWithShortcut) {
+                                toggleRuleState(ruleWithShortcut.id, true);
+                            }
+                        }
+                    }
+                });
+            }
+            document.addEventListener('DOMContentLoaded', init);
+        })();
+    </script>
+    <script type="module">
+        import { Workbox } from 'https://storage.googleapis.com/workbox-cdn/releases/7.0.0/workbox-window.prod.mjs';
+
+        const swUrl = './sw.js';
+        const wb = new Workbox(swUrl);
+
+        wb.addEventListener('waiting', () => {
+            console.log('A new service worker is waiting to activate.');
+            wb.messageSW({ type: 'SKIP_WAITING' });
+        });
+
+        wb.addEventListener('controlling', () => {
+            console.log('The new service worker is now in control. Reloading page for updates...');
+            window.location.reload();
+        });
+
+        wb.register();
+    </script>
+</body>
+
+</html>

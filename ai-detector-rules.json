@@ -1,0 +1,30 @@
+[
+  {
+    "id": "1761378692308",
+    "name": "yasin",
+    "regex": ".*",
+    "flags": "g",
+    "ai_range": [
+      70,
+      97
+    ],
+    "priority": 50,
+    "shortcut": "A",
+    "notes": "",
+    "enabled": true
+  },
+  {
+    "id": "1761378795888",
+    "name": "yasin off",
+    "regex": ".*",
+    "flags": "g",
+    "ai_range": [
+      0,
+      10
+    ],
+    "priority": 50,
+    "shortcut": "B",
+    "notes": "",
+    "enabled": false
+  }
+]
