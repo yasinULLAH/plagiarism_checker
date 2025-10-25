@@ -49,6 +49,10 @@ if (workbox) {
         "revision": "7cbcf8be98d3ce63133537d07504db0f"
     },
     {
+        "url": ".gitattributes",
+        "revision": "05bdb783ee6514c8c072e47680af8ff7"
+    },
+    {
         "url": "ai-detector-rules.json",
         "revision": "682f9f2c0087a562f62bc25a45c35ddf"
     },
@@ -58,11 +62,19 @@ if (workbox) {
     },
     {
         "url": "index.html",
-        "revision": "ab320e3d19709c387f141897b57ab01c"
+        "revision": "895e2af6f6a025a8fc08bcf9c2295fc1"
+    },
+    {
+        "url": "manifest.json",
+        "revision": "ac3a22ad1413a91cda83e5a87c70d3ed"
     },
     {
         "url": "offline.html",
-        "revision": "7656c61e25225c4fcc77cb000be6d527"
+        "revision": "93dd8135f88165fc1bbc0acf525cd1d3"
+    },
+    {
+        "url": "sw.js",
+        "revision": "a3d604562258f903f7357bc7d42515b7"
     }
 ]);
 
